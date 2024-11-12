@@ -1,0 +1,26 @@
+{
+	"version": "0.2.0",
+	"configurations": [
+		{
+			// Basicly the same server side debugging configuration as the official documentation:
+			// https://nextjs.org/docs/app/building-your-application/configuring/debugging#debugging-with-vs-code
+			"name": "Type: Node Terminal",
+			"type": "node-terminal",
+			"request": "launch",
+			"command": "yarn run dev"
+		},
+		{
+			// An alternative way to configure the debugging.
+			// This doesn't work either with NextJS 15.
+			"name": "Type: Node",
+			"request": "launch",
+			"runtimeExecutable": "yarn",
+			"runtimeArgs": ["run", "dev"],
+			"type": "node",
+			// This is only here to make debugging easier
+			// The error can also be reproduced without the
+			// integratedTerminal
+			"console": "integratedTerminal"
+		}
+	]
+}

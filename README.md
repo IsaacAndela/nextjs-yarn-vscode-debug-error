@@ -1,36 +1,98 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# NextJS 15 debugging error in VSCode with Yarn PnP
 
-## Getting Started
+When running NextJS 15 in dev mode in the VSCode debugger via Yarn with the PnP nodeLinker an error will occur on startup. NextJS 14 worked fine.
 
-First, run the development server:
+When using NPM instead of Yarn as the package manager the error does not occur.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+## The Error
+
+Note: Both the `.pnp.cjs` and the `bootloader.js` paths are within the same `'` quote pair.
+
+```
+node:internal/modules/cjs/loader:1252
+  throw err;
+
+Error: Cannot find module '/Users/me/nextjs-yarn-vscode-debug-error/.pnp.cjs /Users/me/Applications/Visual Studio Code.app/Contents/Resources/app/extensions/ms-vscode.js-debug/src/bootloader.js'
+Require stack:
+- internal/preload
+    at Function._resolveFilename (node:internal/modules/cjs/loader:1249:15)
+    at Function._load (node:internal/modules/cjs/loader:1075:27)
+    at TracingChannel.traceSync (node:diagnostics_channel:315:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:218:24)
+    at Module.require (node:internal/modules/cjs/loader:1340:12)
+    at node:internal/modules/cjs/loader:1824:12
+    at loadPreloadModules (node:internal/process/pre_execution:729:5)
+    at setupUserModules (node:internal/process/pre_execution:207:5)
+    at prepareExecution (node:internal/process/pre_execution:160:5)
+    at prepareMainThreadExecution (node:internal/process/pre_execution:55:10) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [ 'internal/preload' ]
+}
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Reproducing the error
 
-You can start editing the page by modifying `app/page.js`. The page auto-updates as you edit the file.
+The steps below are the steps taken to create this repo. You can reproduce it for yourself if you want to.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### 1. Install NextJS with Yarn
 
-## Learn More
+```bash
+    yarn dlx create-next-app@canary
+```
 
-To learn more about Next.js, take a look at the following resources:
+During install only answer yes to using the app router.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+This should result in `.pnp.cjs` and `.pnp.loader.mjs` files and a `.yarn` directory in the root of the project in addition to all the normal NextJS files..
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+### 2. Add launch.json
 
-## Deploy on Vercel
+Create [`.vscode/launch.json`](./.vscode/launch.json) with the following content:
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+```jsonc
+{
+	"version": "0.2.0",
+	"configurations": [
+		{
+			// Basicly the same server side debugging configuration as the official documentation:
+			// https://nextjs.org/docs/app/building-your-application/configuring/debugging#debugging-with-vs-code
+			"name": "Type: Node Terminal",
+			"type": "node-terminal",
+			"request": "launch",
+			"command": "yarn run dev"
+		},
+		{
+			// An alternative way to configure the debugging.
+			// This doesn't work either with NextJS 15.
+			"name": "Type: Node",
+			"request": "launch",
+			"runtimeExecutable": "yarn",
+			"runtimeArgs": ["run", "dev"],
+			"type": "node",
+			// This is only here to make debugging easier
+			// The error can also be reproduced without the
+			// integratedTerminal
+			"console": "integratedTerminal"
+		}
+	]
+}
+```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+### 3. Try running next dev from the terminal
+
+Running `yarn next dev` from the terminal should work fine.
+
+### 4. Try launching debugger in VSCode
+
+Run the command:
+
+```
+Debug: Select and Start Debugging
+```
+
+Pick either of the commands from the command pallet. **The above mentioned error should appear.**
+
+## Other things I've tried
+
+- Installing [Yarn SDK for VS Code](https://yarnpkg.com/getting-started/editor-sdks#vscode) makes no difference.
+- Setting `"type"` to `"module"` or `"commonjs"` in `package.json` makes no difference.
+- When using `node-modules` as the `nodeLinker` option in `.yarnrc.yml` the error does not occur. This however negates most of the benefits of Yarn and is not the canonical way to use Yarn.
