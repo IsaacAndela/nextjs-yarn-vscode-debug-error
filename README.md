@@ -83,7 +83,7 @@ Running `yarn next dev` from the terminal should work fine.
 
 ### 4. Try launching debugger in VSCode
 
-Run the command:
+Run the command from the Command Palette (`cmd+shift+p` or `ctrl-shift-p`):
 
 ```
 Debug: Select and Start Debugging
