@@ -4,6 +4,20 @@ When running NextJS 15 in dev mode in the VSCode debugger via Yarn with the PnP 
 
 When using NPM instead of Yarn as the package manager the error does not occur.
 
+## Canary release introducing the error
+
+### Error introduced in v14.3.0-canary.23
+
+The error first occurs in release [v14.3.0-canary.23](https://github.com/vercel/next.js/releases/tag/v14.3.0-canary.23).
+
+Presumably the merge request [NODE_OPTIONS updates](https://github.com/vercel/next.js/pull/65006) caused the error.
+
+#### Error changed in v14.3.0-canary.26
+
+The error was changed after release [v14.3.0-canary.26](https://github.com/vercel/next.js/releases/tag/v14.3.0-canary.26).
+
+Presumably the merge request [Ensure escaped string are parsed in NODE_OPTIONS](https://github.com/vercel/next.js/pull/65046) changed the error.
+
 ## The Error
 
 Note: Both the `.pnp.cjs` and the `bootloader.js` paths are within the same `'` quote pair.
